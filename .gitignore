@@ -1,0 +1,4 @@
+*.pyc
+_maxvol.pyx
+build/*
+docs/build/*
