@@ -6,7 +6,7 @@ cimport numpy as cnp
 from libc.stdlib cimport malloc, realloc, free
 from cython.parallel import prange
 
-def c_rect_maxvol(A, tol = 1., maxK = None, min_add_K = None, minK = None, start_maxvol_iters = 10, verbose = False, identity_submatrix = True, top_k_index = -1):
+def c_rect_maxvol(A, tol = 1., maxK = None, min_add_K = None, minK = None, start_maxvol_iters = 10, identity_submatrix = True, top_k_index = -1):
     \"\"\"Cython implementation of rectangular 2-volume maximization. For information see :py:func:`rect_maxvol` function\"\"\"
     cdef int N, r, id_sub
     cdef cnp.ndarray lu, coef, basis
@@ -131,7 +131,8 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK, int
     if top_k_index < R:
         top_k_index = R
     ${D}copy_(&size, lu, &i_one, coef, &i_one)
-    ${D}maxvol(N, R, lu, coef, basis, tol, start_maxvol_iters, top_k_index)
+    tmp = 1.05 # tolerance for square maxvol
+    ${D}maxvol(N, R, lu, coef, basis, tmp, start_maxvol_iters, top_k_index)
     # compute square length for each vector
     for j in range(top_k_index):
         L[j] = 0.0
