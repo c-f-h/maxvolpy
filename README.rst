@@ -28,4 +28,4 @@ Installation from git repository
 Documentation
 =============
 
-Is available at https://maxvolpy.readthedocs.com
+Is available at https://maxvolpy.readthedocs.org
