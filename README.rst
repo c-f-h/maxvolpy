@@ -18,7 +18,8 @@ Requirements
 
 Package extensively uses `numpy` python package and `blas`/`lapack`
 libraries.
- 
+Package `numpy` must be of version at least 1.10
+
 Pip-installer
 -------------
 

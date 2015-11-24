@@ -113,6 +113,7 @@ def setup_package():
         author = "Alexander Mikhalev",
         author_email = "muxasizhevsk@gmail.com",
         license = 'MIT',
+        install_requires = ['numpy>=1.10'],
     )
 
     metadata['configuration'] = configuration
