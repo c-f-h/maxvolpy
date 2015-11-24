@@ -1,12 +1,11 @@
 """
 Module `maxvolpy` is designed for constructing different low-rank
-skeleton and cross approximations. There are different strategies of
-doing this, but this module is focused on approximations, based on
-submatrices of good volume.
+skeleton and cross approximations.
 
-Right now, cross approximations are not implemented, but all kinds of
-algorithms of finding good submatrices to build skeleton approximations
-are presented in `maxvol` submodule.
+Right now, cross approximation techniques are not implemented yet, but
+all kinds of algorithms of finding good submatrices to build skeleton
+approximations are presented in `maxvol` submodule. What does good
+submatrix mean is noted in documentation for `maxvol` submodule.
 """
 
 from __future__ import absolute_import

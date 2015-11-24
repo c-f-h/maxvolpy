@@ -6,12 +6,22 @@ from __future__ import absolute_import, division, print_function
 
 DOCLINES = (__doc__ or '').split("\n")
 
+from distutils.util import get_platform
+from numpy.distutils.misc_util import Configuration, get_info
 import sys
-from distutils.util import get_platform 
-from numpy.distutils.misc_util import appendpath
-from os.path import join as pjoin, dirname
+import os
+from os.path import join as pjoin, dirname, exists, getmtime
+import zipfile
+import warnings
+import shutil
+from distutils.cmd import Command
+from distutils.command.clean import clean
+from distutils.version import LooseVersion
 from distutils.dep_util import newer_group
+from distutils.errors import DistutilsError
+from numpy.distutils.misc_util import appendpath
 from numpy.distutils import log
+from numpy.distutils.misc_util import is_string
 
 if sys.version_info[:2] < (2, 7) or (3, 0) <= sys.version_info[0:2] < (3, 4):
     raise RuntimeError("Python version 2.7 or >= 3.5 required.")
@@ -91,6 +101,7 @@ def configuration(parent_package='', top_path=None):
     return config
 
 def setup_package():
+    import setuptools
     from numpy.distutils.core import setup
 
     metadata = dict(
@@ -100,6 +111,7 @@ def setup_package():
         description = DOCLINES[0],
         url = "https://bitbucket.org/muxas/maxvolpy",
         author = "Alexander Mikhalev",
+        author_email = "muxasizhevsk@gmail.com",
         license = 'MIT',
     )
 

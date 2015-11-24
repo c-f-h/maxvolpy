@@ -229,7 +229,7 @@ def maxvol(A, tol=1.05, max_iters=100, top_k_index=-1):
 
     Uses greedy iterative maximization of 1-volume to find good
     `r`-by-`r` submatrix in a given `N`-by-`r` matrix `A` of rank `r`.
-    Returns good submatrix and least squares coefficients of expansion
+    Returns good submatrix and coefficients of expansion
     (`N`-by-`r` matrix) of rows of matrix `A` by rows of good submatrix.
 
     Parameters
@@ -520,7 +520,7 @@ def rect_maxvol_qr(A, tol=1., maxK=None, min_add_K=None, minK=None,
     """
     Finds good rectangular submatrix in Q factor of QR of `A`.
 
-    When rank of matrix `N`-by-`r` matrix `A` is not guaranteed to be
+    When rank of `N`-by-`r` matrix `A` is not guaranteed to be
     equal to `r`, good submatrix in `A` can be found as good submatrix
     in Q factor of QR decomposition of `A`.
 
@@ -597,7 +597,7 @@ def maxvol_qr(A, tol=1.05, max_iters=100, top_k_index=-1):
     """
     Finds good square submatrix in Q factor of QR of `A`.
 
-    When rank of matrix `N`-by-`r` matrix `A` is not guaranteed to be
+    When rank of `N`-by-`r` matrix `A` is not guaranteed to be
     equal to `r`, good submatrix in `A` can be found as good submatrix
     in Q factor of QR decomposition of `A`.
 
@@ -653,7 +653,6 @@ def maxvol_qr(A, tol=1.05, max_iters=100, top_k_index=-1):
     return maxvol(Q, tol, max_iters, top_k_index)
 
 import numpy as np
-from scipy.linalg import solve_triangular, get_lapack_funcs, get_blas_funcs
 
 try:
     from ._maxvol import c_rect_maxvol, c_maxvol
@@ -661,6 +660,7 @@ try:
     maxvol_func = c_maxvol
     __all__.extend(['c_rect_maxvol', 'c_maxvol'])
 except:
+    from scipy.linalg import solve_triangular, get_lapack_funcs, get_blas_funcs
     print("warning: fast C maxvol functions are not compiled, continue with"
             " python maxvol functions")
     rect_maxvol_func = py_rect_maxvol
