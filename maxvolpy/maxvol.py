@@ -204,21 +204,21 @@ def rect_maxvol(A, tol=1., maxK=None, min_add_K=None, minK=None,
     >>> piv, C = rect_maxvol(a, 1.0)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('maximum euclidian norm of row in matrix C: {}'.format(
-    ... max([np.linalg.norm(C[i], 2) for i in range(1000)])))
-    maximum euclidian norm of row in matrix C: 1.0
+    >>> print('maximum euclidian norm of row in matrix C: {:.5f}'.
+    ... format(max([np.linalg.norm(C[i], 2) for i in range(1000)])))
+    maximum euclidian norm of row in matrix C: 1.00000
     >>> piv, C = rect_maxvol(a, 1.5)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('maximum euclidian norm of row in matrix C: {}'.format(
-    ... max([np.linalg.norm(C[i], 2) for i in range(1000)])))
-    maximum euclidian norm of row in matrix C: 1.49193495575
+    >>> print('maximum euclidian norm of row in matrix C: {:.5f}'.
+    ... format(max([np.linalg.norm(C[i], 2) for i in range(1000)])))
+    maximum euclidian norm of row in matrix C: 1.49193
     >>> piv, C = rect_maxvol(a, 2.0)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('maximum euclidian norm of row in matrix C: {}'.format(
-    ... max([np.linalg.norm(C[i], 2) for i in range(1000)])))
-    maximum euclidian norm of row in matrix C: 1.91953833587
+    >>> print('maximum euclidian norm of row in matrix C: {:.5f}'.
+    ... format(max([np.linalg.norm(C[i], 2) for i in range(1000)])))
+    maximum euclidian norm of row in matrix C: 1.91954
     """
     return rect_maxvol_func(A, tol, maxK, min_add_K, minK, start_maxvol_iters,
             identity_submatrix, top_k_index)
@@ -264,18 +264,18 @@ def maxvol(A, tol=1.05, max_iters=100, top_k_index=-1):
     >>> piv, C = maxvol(a, 1.0)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('Chebyshev norm of matrix C: {}'.format(abs(C).max()))
-    Chebyshev norm of matrix C: 1.0
+    >>> print('Chebyshev norm of matrix C: {:.5f}'.format(abs(C).max()))
+    Chebyshev norm of matrix C: 1.00000
     >>> piv, C = maxvol(a, 1.05)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('Chebyshev norm of matrix C: {}'.format(abs(C).max()))
-    Chebyshev norm of matrix C: 1.0464068226
+    >>> print('Chebyshev norm of matrix C: {:.5f}'.format(abs(C).max()))
+    Chebyshev norm of matrix C: 1.04641
     >>> piv, C = maxvol(a, 1.10)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('Chebyshev norm of matrix C: {}'.format(abs(C).max()))
-    Chebyshev norm of matrix C: 1.07853911436
+    >>> print('Chebyshev norm of matrix C: {:.5f}'.format(abs(C).max()))
+    Chebyshev norm of matrix C: 1.07854
     """
     return maxvol_func(A, tol=tol, max_iters=max_iters,
             top_k_index=top_k_index)
@@ -346,26 +346,26 @@ def rect_maxvol_svd(A, svd_tol=1e-3, tol=1., maxK=None, min_add_K=None,
     >>> np.random.seed(100)
     >>> a = np.random.rand(1000, 30, 2).view(dtype=np.complex128)[:,:,0]
     >>> piv, C = rect_maxvol_svd(a, svd_tol=1e-1, tol=1.0, job='R')
-    >>> print('relative maxvol approximation error: {}'.format(
+    >>> print('relative maxvol approximation error: {:.5f}'.format(
     ... np.linalg.norm(a-C.dot(a[piv]), 2)/np.linalg.norm(a, 2)))
-    relative maxvol approximation error: 0.144971725468
-    >>> print('maximum euclidian norm of row in matrix C: {}'.format(
-    ... max([np.linalg.norm(C[i], 2) for i in range(1000)])))
-    maximum euclidian norm of row in matrix C: 1.0
+    relative maxvol approximation error: 0.14497
+    >>> print('maximum euclidian norm of row in matrix C: {:.5f}'.
+    ... format(max([np.linalg.norm(C[i], 2) for i in range(1000)])))
+    maximum euclidian norm of row in matrix C: 1.00000
     >>> piv, C = rect_maxvol_svd(a, svd_tol=1e-1, tol=1.5, job='R')
-    >>> print('relative maxvol approximation error: {}'.format(
+    >>> print('relative maxvol approximation error: {:.5f}'.format(
     ... np.linalg.norm(a-C.dot(a[piv]), 2)/np.linalg.norm(a, 2)))
-    relative maxvol approximation error: 0.196401435512
-    >>> print('maximum euclidian norm of row in matrix C: {}'.format(
-    ... max([np.linalg.norm(C[i], 2) for i in range(1000)])))
-    maximum euclidian norm of row in matrix C: 1.49534760788
+    relative maxvol approximation error: 0.19640
+    >>> print('maximum euclidian norm of row in matrix C: {:.5f}'.
+    ... format(max([np.linalg.norm(C[i], 2) for i in range(1000)])))
+    maximum euclidian norm of row in matrix C: 1.49535
     >>> piv, C = rect_maxvol_svd(a, svd_tol=1e-1, tol=2.0, job='R')
-    >>> print('relative maxvol approximation error: {}'.format(
+    >>> print('relative maxvol approximation error: {:.5f}'.format(
     ... np.linalg.norm(a-C.dot(a[piv]), 2)/np.linalg.norm(a, 2)))
-    relative maxvol approximation error: 0.229807869136
-    >>> print('maximum euclidian norm of row in matrix C: {}'.format(
-    ... max([np.linalg.norm(C[i], 2) for i in range(1000)])))
-    maximum euclidian norm of row in matrix C: 1.8848535725
+    relative maxvol approximation error: 0.22981
+    >>> print('maximum euclidian norm of row in matrix C: {:.5f}'.
+    ... format(max([np.linalg.norm(C[i], 2) for i in range(1000)])))
+    maximum euclidian norm of row in matrix C: 1.88485
     """
     if job == 'R':
         if top_k_index == -1:
@@ -459,23 +459,23 @@ def maxvol_svd(A, svd_tol=1e-3, tol=1.05, max_iters=100, job='F',
     >>> np.random.seed(100)
     >>> a = np.random.rand(1000, 30, 2).view(dtype=np.complex128)[:,:,0]
     >>> piv, C = maxvol_svd(a, svd_tol=1e-1, tol=1.0, job='R')
-    >>> print('relative maxvol approximation error: {}'.format(
+    >>> print('relative maxvol approximation error: {:.5f}'.format(
     ... np.linalg.norm(a-C.dot(a[piv]), 2)/np.linalg.norm(a, 2)))
-    relative maxvol approximation error: 0.246839403405
-    >>> print('Chebyshev norm of matrix C: {}'.format(abs(C).max()))
-    Chebyshev norm of matrix C: 1.0
+    relative maxvol approximation error: 0.24684
+    >>> print('Chebyshev norm of matrix C: {:.5f}'.format(abs(C).max()))
+    Chebyshev norm of matrix C: 1.00000
     >>> piv, C = maxvol_svd(a, svd_tol=1e-1, tol=1.05, job='R')
-    >>> print('relative maxvol approximation error: {}'.format(
+    >>> print('relative maxvol approximation error: {:.5f}'.format(
     ... np.linalg.norm(a-C.dot(a[piv]), 2)/np.linalg.norm(a, 2)))
-    relative maxvol approximation error: 0.246839403405
-    >>> print('Chebyshev norm of matrix C: {}'.format(abs(C).max()))
-    Chebyshev norm of matrix C: 1.0
+    relative maxvol approximation error: 0.24684
+    >>> print('Chebyshev norm of matrix C: {:.5f}'.format(abs(C).max()))
+    Chebyshev norm of matrix C: 1.00000
     >>> piv, C = maxvol_svd(a, svd_tol=1e-1, tol=1.10, job='R')
-    >>> print('relative maxvol approximation error: {}'.format(
+    >>> print('relative maxvol approximation error: {:.5f}'.format(
     ... np.linalg.norm(a-C.dot(a[piv]), 2)/np.linalg.norm(a, 2)))
-    relative maxvol approximation error: 0.25484511962
-    >>> print('Chebyshev norm of matrix C: {}'.format(abs(C).max()))
-    Chebyshev norm of matrix C: 1.06824913975
+    relative maxvol approximation error: 0.25485
+    >>> print('Chebyshev norm of matrix C: {:.5f}'.format(abs(C).max()))
+    Chebyshev norm of matrix C: 1.06825
     """
     if tol < 1:
         tol = 1.0
@@ -570,21 +570,21 @@ def rect_maxvol_qr(A, tol=1., maxK=None, min_add_K=None, minK=None,
     >>> piv, C = rect_maxvol_qr(a, 1.0)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('maximum euclidian norm of row in matrix C: {}'.format(
-    ... max([np.linalg.norm(C[i], 2) for i in range(1000)])))
-    maximum euclidian norm of row in matrix C: 1.0
+    >>> print('maximum euclidian norm of row in matrix C: {:.5f}'.
+    ... format(max([np.linalg.norm(C[i], 2) for i in range(1000)])))
+    maximum euclidian norm of row in matrix C: 1.00000
     >>> piv, C = rect_maxvol_qr(a, 1.5)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('maximum euclidian norm of row in matrix C: {}'.format(
-    ... max([np.linalg.norm(C[i], 2) for i in range(1000)])))
-    maximum euclidian norm of row in matrix C: 1.49193495575
+    >>> print('maximum euclidian norm of row in matrix C: {:.5f}'.
+    ... format(max([np.linalg.norm(C[i], 2) for i in range(1000)])))
+    maximum euclidian norm of row in matrix C: 1.49193
     >>> piv, C = rect_maxvol_qr(a, 2.0)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('maximum euclidian norm of row in matrix C: {}'.format(
-    ... max([np.linalg.norm(C[i], 2) for i in range(1000)])))
-    maximum euclidian norm of row in matrix C: 1.91953833587
+    >>> print('maximum euclidian norm of row in matrix C: {:.5f}'.
+    ... format(max([np.linalg.norm(C[i], 2) for i in range(1000)])))
+    maximum euclidian norm of row in matrix C: 1.91954
     """
     N, r = A.shape
     if N <= r:
@@ -633,18 +633,18 @@ def maxvol_qr(A, tol=1.05, max_iters=100, top_k_index=-1):
     >>> piv, C = maxvol_qr(a, 1.0)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('Chebyshev norm of matrix C: {}'.format(abs(C).max()))
-    Chebyshev norm of matrix C: 1.0
+    >>> print('Chebyshev norm of matrix C: {:.5f}'.format(abs(C).max()))
+    Chebyshev norm of matrix C: 1.00000
     >>> piv, C = maxvol_qr(a, 1.05)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('Chebyshev norm of matrix C: {}'.format(abs(C).max()))
-    Chebyshev norm of matrix C: 1.0464068226
+    >>> print('Chebyshev norm of matrix C: {:.5f}'.format(abs(C).max()))
+    Chebyshev norm of matrix C: 1.04641
     >>> piv, C = maxvol_qr(a, 1.10)
     >>> np.allclose(a, C.dot(a[piv]))
     True
-    >>> print('Chebyshev norm of matrix C: {}'.format(abs(C).max()))
-    Chebyshev norm of matrix C: 1.07853911436
+    >>> print('Chebyshev norm of matrix C: {:.5f}'.format(abs(C).max()))
+    Chebyshev norm of matrix C: 1.07854
     """
     N, r = A.shape
     if N <= r:

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""maxvolpy: finds good submatrices.
+"""
+Cross and skeleton approximations, based on maximum volume submatrices.
 """
 
 from __future__ import absolute_import, division, print_function
@@ -22,9 +23,6 @@ from distutils.errors import DistutilsError
 from numpy.distutils.misc_util import appendpath
 from numpy.distutils import log
 from numpy.distutils.misc_util import is_string
-
-if sys.version_info[:2] < (2, 7) or (3, 0) <= sys.version_info[0:2] < (3, 4):
-    raise RuntimeError("Python version 2.7 or >= 3.5 required.")
 
 def have_good_cython():
     try:
@@ -108,12 +106,13 @@ def setup_package():
         name = 'maxvolpy',
         maintainer = "Alexander Mikhalev",
         maintainer_email = "muxasizhevsk@gmail.com",
-        description = DOCLINES[0],
+        description = DOCLINES[1],
+        long_description = DOCLINES[1],
         url = "https://bitbucket.org/muxas/maxvolpy",
         author = "Alexander Mikhalev",
         author_email = "muxasizhevsk@gmail.com",
         license = 'MIT',
-        install_requires = ['numpy>=1.10'],
+        install_requires = ['numpy>=1.10.1', 'cython>=0.23.4'],
     )
 
     metadata['configuration'] = configuration
