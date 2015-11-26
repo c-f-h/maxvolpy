@@ -8,12 +8,15 @@ def configuration(parent_package=None, top_path=None):
     cur_setup_dir = os.path.dirname(__file__)
     if len(cur_setup_dir) > 0:
         os.chdir(cur_setup_dir)
-    if not exists('_maxvol.pyx') or getmtime('_maxvol.pyx.src') > getmtime('_maxvol.pyx'):
-        execfile('_maxvol.pyx.src')
+    if not exists('_maxvol.pyx') or \
+            getmtime('_maxvol.pyx.src') > getmtime('_maxvol.pyx'):
+        exec(open('_maxvol.pyx.src').read())
     os.chdir(start_setup_dir)
-    config.add_extension('_maxvol', sources=['_maxvol.pyx'], extra_compile_args=['-undefined,dynamic_lookup'])
+    config.add_extension('_maxvol',
+            sources=['_maxvol.pyx'],
+            extra_compile_args=['-undefined,dynamic_lookup'],
+            )
     return config
-    
 
 
 if __name__ == '__main__':
