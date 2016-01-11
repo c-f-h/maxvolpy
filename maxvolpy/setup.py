@@ -1,5 +1,6 @@
 def configuration(parent_package=None, top_path=None):
     from numpy.distutils.misc_util import Configuration
+    import numpy.__config__ as npconf
     import os
     from os.path import exists, getmtime
     config = Configuration('maxvolpy', parent_package, top_path) 
@@ -12,8 +13,10 @@ def configuration(parent_package=None, top_path=None):
             getmtime('_maxvol.pyx.src') > getmtime('_maxvol.pyx'):
         exec(open('_maxvol.pyx.src').read())
     os.chdir(start_setup_dir)
+
     config.add_extension('_maxvol',
             sources=['_maxvol.pyx'],
+            **npconf.lapack_opt_info
             )
     return config
 
