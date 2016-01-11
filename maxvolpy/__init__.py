@@ -12,5 +12,13 @@ from __future__ import absolute_import
 
 __all__ = ['maxvol']
 
+# Hack to get BLAS and LAPACK from numpy
+import sys
+import ctypes
+flags = sys.getdlopenflags()
+sys.setdlopenflags(flags | ctypes.RTLD_GLOBAL)
+import numpy as np
+sys.setdlopenflags(flags)
+
 from . import maxvol
 from .__version__ import __version__
