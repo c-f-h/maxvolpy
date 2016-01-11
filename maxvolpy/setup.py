@@ -14,7 +14,6 @@ def configuration(parent_package=None, top_path=None):
     os.chdir(start_setup_dir)
     config.add_extension('_maxvol',
             sources=['_maxvol.pyx'],
-            extra_link_args=['-undefined,dynamic_lookup'],
             )
     return config
 
