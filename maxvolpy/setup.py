@@ -16,7 +16,7 @@ def configuration(parent_package=None, top_path=None):
 
     config.add_extension('_maxvol',
             sources=['_maxvol.pyx'],
-            **npconf.lapack_opt_info
+            extra_info=npconf.lapack_opt_info
             )
     return config
 
