@@ -77,7 +77,6 @@ def setup_package():
         author_email = "muxasizhevsk@gmail.com",
         license = 'MIT',
         install_requires = ['numpy>=1.10.1', 'cython>=0.23.4'],
-        setup_requires = ['numpy>=1.10.1', 'cython>=0.23.4']
     )
 
     metadata['configuration'] = configuration
