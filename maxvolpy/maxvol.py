@@ -12,7 +12,7 @@ from __future__ import absolute_import, division, print_function
 __all__ = ['rect_maxvol', 'maxvol', 'rect_maxvol_svd', 'maxvol_svd',
     'rect_maxvol_qr', 'maxvol_qr']
 
-from .aux import svd_cut
+from .misc import svd_cut
 
 def py_rect_maxvol(A, tol=1., maxK=None, min_add_K=None, minK=None,
         start_maxvol_iters=10, identity_submatrix=True, top_k_index=-1):
