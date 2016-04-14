@@ -280,18 +280,19 @@ def maxvol(A, tol=1.05, max_iters=100, top_k_index=-1):
     return maxvol_func(A, tol=tol, max_iters=max_iters,
             top_k_index=top_k_index)
 
-def rect_maxvol_svd(A, svd_tol=1e-3, tol=1., maxK=None, min_add_K=None,
-        minK=None, start_maxvol_iters=10, identity_submatrix=True, job='F',
-        top_k_index=-1):
+def rect_maxvol_svd(A, svd_tol=1e-3, svd_alpha=0., tol=1., maxK=None,
+        min_add_K=None, minK=None, start_maxvol_iters=10,
+        identity_submatrix=True, job='F', top_k_index=-1):
     """
     Applies SVD truncation and finds good rectangular submatrix.
 
     Computes SVD for `top_k_index` rows and/or columns of given matrix
-    `A`, cuts off singular values, lower than `svd_tol` (relatively,
-    getting only highest singular vectors), projects rows and/or
-    columns, starting from `top_k_index`, to space of first
-    `top_k_index` rows and/or columns and runs `rect_maxvol` for left
-    and/or right singular vectors.
+    `A`, increases singular values by regularizing parameter
+    `svd_alpha`, cuts off singular values, lower than
+    `svd_tol` (relatively, getting only highest singular vectors),
+    projects rows and/or columns, starting from `top_k_index`, to space
+    of first `top_k_index` rows and/or columns and runs `rect_maxvol`
+    for left and/or right singular vectors.
 
     Parameters
     ----------
@@ -299,6 +300,8 @@ def rect_maxvol_svd(A, svd_tol=1e-3, tol=1., maxK=None, min_add_K=None,
         Real or complex matrix.
     svd_tol : float
         Cut-off singular values parameter.
+    svd_alpha : float
+        Regularizing parameter for `misc.svd_cut`.
     tol : float
         Upper bound for euclidian norm of coefficients of expansion of
         rows/columns of approximant of `A` by good rows/columns of
@@ -372,7 +375,7 @@ def rect_maxvol_svd(A, svd_tol=1e-3, tol=1., maxK=None, min_add_K=None,
             top_k_index = A.shape[0]
         # compute largest singular values and vectors for first
         # top_k_index rows
-        U, S, V = svd_cut(A[:top_k_index], svd_tol)
+        U, S, V = svd_cut(A[:top_k_index], svd_tol, svd_alpha)
         # find projection coefficients of all other rows to subspace
         # of largest singular vectors of first rows
         B = A[top_k_index:].dot(V.T.conj())*(1.0/S).reshape(1,-1)
@@ -384,7 +387,7 @@ def rect_maxvol_svd(A, svd_tol=1e-3, tol=1., maxK=None, min_add_K=None,
             top_k_index = A.shape[1]
         # compute largest singular values and vectors for first
         # top_k_index columns
-        U, S, V = svd_cut(A[:,:top_k_index], svd_tol)
+        U, S, V = svd_cut(A[:,:top_k_index], svd_tol, svd_alpha)
         # find projection coefficients of all other columns to subspace
         # of largest singular vectors of first columns
         B = (1.0/S).reshape(-1,1)*U.T.conj().dot(A[:,top_k_index:])
@@ -393,33 +396,34 @@ def rect_maxvol_svd(A, svd_tol=1e-3, tol=1., maxK=None, min_add_K=None,
                 min_add_K, minK, start_maxvol_iters, identity_submatrix,
                 top_k_index)
     elif job == 'F':
-        # procede with job = 'R' and job = 'C' simultaneously
+        # proceed with job = 'R' and job = 'C' simultaneously
         if top_k_index != -1:
-            value0, value1 = rect_maxvol_svd(A, svd_tol, tol, maxK, min_add_K,
-                    minK, start_maxvol_iters, identity_submatrix, 'R',
-                    top_k_index)
-            value2, value3 = rect_maxvol_svd(A, svd_tol, tol, maxK, min_add_K,
-                    minK, start_maxvol_iters, identity_submatrix, 'C',
-                    top_k_index)
+            value0, value1 = rect_maxvol_svd(A, svd_tol, svd_alpha, tol, maxK,
+                    min_add_K, minK, start_maxvol_iters, identity_submatrix,
+                    'R', top_k_index)
+            value2, value3 = rect_maxvol_svd(A, svd_tol, svd_alpha, tol, maxK,
+                    min_add_K, minK, start_maxvol_iters, identity_submatrix,
+                    'C', top_k_index)
             return value0, value1, value2, value3
-        U, S, V = svd_cut(A, svd_tol)
+        U, S, V = svd_cut(A, svd_tol, svd_alpha)
         value0, value1 = rect_maxvol(U, tol, maxK, min_add_K, minK,
                 start_maxvol_iters, identity_submatrix, top_k_index)
         value2, value3 = rect_maxvol(V.T.conj(), tol, maxK, min_add_K, minK,
                 start_maxvol_iters, identity_submatrix, top_k_index)
         return value0, value1, value2, value3
 
-def maxvol_svd(A, svd_tol=1e-3, tol=1.05, max_iters=100, job='F',
+def maxvol_svd(A, svd_tol=1e-3, svd_alpha=0., tol=1.05, max_iters=100, job='F',
         top_k_index=-1):
     """
     Applies SVD truncation and finds good square submatrix.
 
     Computes SVD for `top_k_index` rows and/or columns of given matrix
-    `A`, cuts off singular values, lower than `svd_tol` (relatively,
-    getting only `r` highest singular vectors), projects rows and/or
-    columns, starting from `top_k_index`, to space of first
-    `top_k_index` rows and/or columns and runs `maxvol` for left and/or
-    right singular vectors.
+    `A`, increases singular values by regularizing parameter
+    `svd_alpha`, cuts off singular values, lower than
+    `svd_tol` (relatively, getting only highest singular vectors),
+    projects rows and/or columns, starting from `top_k_index`, to space
+    of first `top_k_index` rows and/or columns and runs `maxvol`
+    for left and/or right singular vectors.
 
     Parameters
     ----------
@@ -427,6 +431,8 @@ def maxvol_svd(A, svd_tol=1e-3, tol=1.05, max_iters=100, job='F',
         Real or complex matrix.
     svd_tol : float
         Cut-off singular values parameter.
+    svd_alpha : float
+        Regularizing parameter for `misc.svd_cut`.
     tol : float
         Upper bound for infinite norm of coefficients of expansion of
         rows/columns of approximant of `A` good rows/columns of
@@ -484,7 +490,7 @@ def maxvol_svd(A, svd_tol=1e-3, tol=1.05, max_iters=100, job='F',
             top_k_index = A.shape[0]
         # compute largest singular values and vectors for first
         # top_k_index rows
-        U, S, V = svd_cut(A[:top_k_index], svd_tol)
+        U, S, V = svd_cut(A[:top_k_index], svd_tol, svd_alpha)
         # find projection coefficients of all other rows to subspace of
         # largest singular vectors of first rows
         B = A[top_k_index:].dot(V.T.conj())*(1.0/S).reshape(1,-1)
@@ -495,7 +501,7 @@ def maxvol_svd(A, svd_tol=1e-3, tol=1.05, max_iters=100, job='F',
             top_k_index = A.shape[1]
         # compute largest singular values and vectors for first
         # top_k_index columns
-        U, S, V = svd_cut(A[:,:top_k_index], svd_tol)
+        U, S, V = svd_cut(A[:,:top_k_index], svd_tol, svd_alpha)
         # find projection coefficients of all other columns to subspace
         # of largest singular vectors of first columns
         B = (1.0/S).reshape(-1,1)*U.T.conj().dot(A[:,top_k_index:])
@@ -505,12 +511,12 @@ def maxvol_svd(A, svd_tol=1e-3, tol=1.05, max_iters=100, job='F',
     elif job == 'F':
         # procede with job = 'R' and job = 'C' simultaneously
         if top_k_index != -1:
-            value0, value1 = maxvol_svd(A, svd_tol, tol, max_iters, 'R',
-                    top_k_index)
-            value2, value3 = maxvol_svd(A, svd_tol, tol, max_iters, 'C',
-                    top_k_index)
+            value0, value1 = maxvol_svd(A, svd_tol, svd_alpha, tol, max_iters,
+                    'R', top_k_index)
+            value2, value3 = maxvol_svd(A, svd_tol, svd_alpha, tol, max_iters,
+                    'C', top_k_index)
             return value0, value1, value2, value3
-        U, S, V = svd_cut(A, svd_tol)
+        U, S, V = svd_cut(A, svd_tol, svd_alpha)
         value0, value1 = maxvol(U, tol, max_iters, top_k_index)
         value2, value3 = maxvol(V.T.conj(), tol, max_iters, top_k_index)
         return value0, value1, value2, value3
