@@ -162,29 +162,32 @@ def rect_maxvol(A, tol=1., maxK=None, min_add_K=None, minK=None,
     ----------
     A : numpy.ndarray(ndim=2)
         Real or complex matrix of shape `(N, r)`, `N >= r`.
-    tol : float
+    tol : float, optional
         Upper bound for euclidian norm of coefficients of expansion of
-        rows of `A` by rows of good submatrix.
-    maxK : integer
-        Maximum number of rows in good submatrix.
-    minK : integer
-        Minimum number of rows in good submatrix.
-    min_add_K : integer
+        rows of `A` by rows of good submatrix. Defaults to `1.0`.
+    maxK : integer, optional
+        Maximum number of rows in good submatrix. Defaults to `N` if
+        not set explicitly.
+    minK : integer, optional
+        Minimum number of rows in good submatrix. Defaults to `r` if
+        not set explicitly.
+    min_add_K : integer, optional
         Minimum number of rows to add to the square submatrix.
         Resulting good matrix will have minimum of `r+min_add_K` rows.
-    start_maxvol_iters : integer
+        Ignored if not set explicitly.
+    start_maxvol_iters : integer, optional
         How many iterations of square maxvol (optimization of 1-volume)
         is required to be done before actual rectangular 2-volume
-        maximization.
-    identity_submatrix : boolean
+        maximization. Defaults to `10`.
+    identity_submatrix : boolean, optional
         Coefficients of expansions are computed as least squares
         solution. If `identity_submatrix` is True, returned matrix of
         coefficients will have submatrix, corresponding to good rows,
-        set to identity.
-    top_k_index : integer
+        set to identity. Defaults to `True`.
+    top_k_index : integer, optional
         Pivot rows for good submatrix will be in range from `0` to
         `(top_k_index-1)`. This restriction is ignored, if `top_k_index`
-        is -1.
+        is -1. Defaults to `-1`.
 
     Returns
     -------
@@ -236,15 +239,17 @@ def maxvol(A, tol=1.05, max_iters=100, top_k_index=-1):
     ----------
     A : numpy.ndarray(ndim=2)
         Real or complex matrix of shape `(N, r)`, `N >= r`.
-    tol : float
+    tol : float, optional
         Upper bound for infinite norm of coefficients of expansion of
         rows of `A` by rows of good submatrix. Minimum value is 1.
-    max_iters : integer
+        Default to `1.05`.
+    max_iters : integer, optional
         Maximum number of iterations. Each iteration swaps 2 rows.
-    top_k_index : integer
+        Defaults to `100`.
+    top_k_index : integer, optional
         Pivot rows for good submatrix will be in range from `0` to
         `(top_k_index-1)`. This restriction is ignored, if `top_k_index`
-        is -1.
+        is -1. Defaults to `-1`.
     
     Returns
     -------

@@ -1,10 +1,19 @@
 python_code = """
-#cython: embedsignature = True, cdivision = True
+#cython: embedsignature=True, cdivision=True, boundscheck=False, \
+wraparound=False, initializedcheck=False
 __all__ = ['c_maxvol', 'c_rect_maxvol']
 import numpy as np
 cimport numpy as cnp
 from libc.stdlib cimport malloc, realloc, free
 from cython.parallel import prange
+
+cdef extern from "complex.h":
+    double cabs(double complex)
+    float cabsf(float complex)
+
+cdef extern from "math.h":
+    double fabs(double)
+    float fabsf(float)
 
 def c_rect_maxvol(A, tol=1., maxK=None, min_add_K=None, minK=None,
         start_maxvol_iters=10, identity_submatrix=True, top_k_index=-1):
@@ -150,7 +159,7 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK,
     cdef char cN = 'N'
     cdef int i, j, i_one = 1, K, size = N*R
     cdef $dtype d_one = 1.0, d_zero = 0.0, l
-    cdef $dtype2 tol2 = tol*tol, tmp
+    cdef $dtype2 tol2 = tol*tol, tmp, tmp2
     cdef int *basis = <int *> malloc(N * sizeof(int))
     cdef $dtype2 *chosen = <$dtype2 *> malloc(N * sizeof($dtype2))
     cdef int [:]basis_buf
@@ -176,7 +185,7 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK,
     for i in range(R):
         tmp_pointer = coef+i*N
         for j in range(top_k_index):
-            tmp = abs(tmp_pointer[j])
+            tmp = ${abs}(tmp_pointer[j])
             L[j] += tmp*tmp
     for i in range(R):
         L[basis[i]] = 0.0
@@ -194,16 +203,16 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK,
             &i_one)
         l = (-d_one)/(1+V[i])
         $gerc_(&N, &K, &l, V, &i_one, tmp_row, &i_one, coef, &N)
-        l = -l
+        tmp = -l$dotreal
         if coef_columns <= K:
             coef_columns += coef_realloc_step
             coef = <$dtype *> realloc(coef, N * coef_columns * sizeof($dtype))
         tmp_pointer = coef+K*N
         for j in range(N):
-            tmp_pointer[j] = l*V[j]
+            tmp_pointer[j] = tmp*V[j]
         for j in range(top_k_index):
-            tmp = abs(V[j])
-            L[j] -= (l*tmp*tmp)$dotreal
+            tmp2 = ${abs}(V[j])
+            L[j] -= tmp2*tmp2*tmp
             L[j] *= chosen[j]
         i = i${D2}amax_(&top_k_index, L, &i_one)-1
         K += 1
@@ -236,6 +245,7 @@ cdef object ${D}maxvol(int N, int R, $dtype *lu, $dtype *coef, int *basis,
     cdef $dtype *tmp_row = <$dtype *> malloc(R*sizeof($dtype))
     cdef $dtype *tmp_column = <$dtype *> malloc(N*sizeof($dtype))
     cdef int info = 0, size = N * R, i, j, tmp_int, i_one = 1, iters = 0
+    cdef int k_row, k_col
     cdef char cR = 'R', cN = 'N', cU = 'U', cL = 'L'
     cdef $dtype d_one = 1, alpha, max_value
     cdef $dtype2 abs_max, tmp
@@ -270,7 +280,7 @@ cdef object ${D}maxvol(int N, int R, $dtype *lu, $dtype *coef, int *basis,
         abs_max = -1
         for k_row in range(top_k_index):
             for k_col in range(R):
-                tmp = abs(coef[k_row+k_col*N])
+                tmp = ${abs}(coef[k_row+k_col*N])
                 if tmp > abs_max:
                     abs_max = tmp
                     j = k_row
@@ -299,16 +309,16 @@ code_maxvol = Template(maxvol_template)
 
 code_float = code_maxvol.substitute(D='s', D2='s', gerc_='sger_',
     geru_='sger_', dtype='float', dtype2='float', npdtype='np.float32',
-    dotreal='', conj='')
+    dotreal='', conj='', abs='fabsf')
 code_double = code_maxvol.substitute(D='d', D2='d', gerc_='dger_',
     geru_='dger_', dtype='double', dtype2='double', npdtype='np.float64',
-    dotreal='', conj='')
+    dotreal='', conj='', abs='fabs')
 code_floatcomplex = code_maxvol.substitute(D='c', D2='s', gerc_='cgerc_',
     geru_='cgeru_', dtype='float complex', dtype2='float',
-    npdtype='np.complex64', dotreal='.real', conj='.conjugate()')
+    npdtype='np.complex64', dotreal='.real', conj='.conjugate()', abs='cabsf')
 code_doublecomplex = code_maxvol.substitute(D='z', D2='d', gerc_='zgerc_',
     geru_='zgeru_',  dtype='double complex', dtype2='double',
-    npdtype='np.complex128', dotreal='.real', conj='.conjugate()')
+    npdtype='np.complex128', dotreal='.real', conj='.conjugate()', abs='cabs')
 
 f = open('_maxvol.pyx', 'w')
 f.write(python_code)
