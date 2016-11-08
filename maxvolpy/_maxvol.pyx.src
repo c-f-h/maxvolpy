@@ -7,11 +7,11 @@ cimport numpy as cnp
 from libc.stdlib cimport malloc, realloc, free
 from cython.parallel import prange
 
-cdef extern from "complex.h":
+cdef extern from "complex.h" nogil:
     double cabs(double complex)
     float cabsf(float complex)
 
-cdef extern from "math.h":
+cdef extern from "math.h" nogil:
     double fabs(double)
     float fabsf(float)
 
@@ -178,16 +178,16 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK,
     tmp = 1.05 # tolerance for square maxvol
     ${D}maxvol(N, R, lu, coef, basis, tmp, start_maxvol_iters, top_k_index)
     # compute square length for each vector
-    for j in range(top_k_index):
+    for j in prange(top_k_index, schedule="static", nogil=True):
         L[j] = 0.0
         V[j] = 0.0
         chosen[j] = 1.0
     for i in range(R):
         tmp_pointer = coef+i*N
-        for j in range(top_k_index):
+        for j in prange(top_k_index, schedule="static", nogil=True):
             tmp = ${abs}(tmp_pointer[j])
             L[j] += tmp*tmp
-    for i in range(R):
+    for i in prange(R, schedule="static", nogil=True):
         L[basis[i]] = 0.0
         chosen[basis[i]] = 0.0
     i = i${D2}amax_(&top_k_index, L, &i_one)-1
@@ -197,7 +197,7 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK,
         chosen[i] = 0.0
         #${D}copy_(&K, coef+i, &N, tmp_row, &i_one)
         tmp_pointer = coef+i
-        for j in range(K):
+        for j in prange(K, schedule="static", nogil=True):
             tmp_row[j] = tmp_pointer[j*N]$conj
         ${D}gemv_(&cN, &N, &K, &d_one, coef, &N, tmp_row, &i_one, &d_zero, V,
             &i_one)
@@ -208,9 +208,9 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK,
             coef_columns += coef_realloc_step
             coef = <$dtype *> realloc(coef, N * coef_columns * sizeof($dtype))
         tmp_pointer = coef+K*N
-        for j in range(N):
+        for j in prange(N, schedule="static", nogil=True):
             tmp_pointer[j] = tmp*V[j]
-        for j in range(top_k_index):
+        for j in prange(top_k_index, schedule="static", nogil=True):
             tmp2 = ${abs}(V[j])
             L[j] -= tmp2*tmp2*tmp
             L[j] *= chosen[j]
@@ -221,19 +221,19 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK,
     free(tmp_row)
     C = np.ndarray((N, K), order='F', dtype=$npdtype)
     coef_buf = C
-    for i in range(K):
+    for i in prange(K, schedule="static", nogil=True):
         for j in range(N):
             coef_buf[j, i] = coef[i*N+j]
     free(coef)
     if identity_submatrix == 1:
-        for i in range(K):
+        for i in prange(K, schedule="static", nogil=True):
             tmp_pointer = &coef_buf[0, 0]+basis[i]
             for j in range(K):
                 tmp_pointer[j*N] = 0.0
             tmp_pointer[i*N] = 1.0
     I = np.ndarray(K, dtype=np.int32)
     basis_buf = I
-    for i in range(K):
+    for i in prange(K, schedule="static", nogil=True):
         basis_buf[i] = basis[i]
     free(basis)
     return I, C
@@ -264,7 +264,7 @@ cdef object ${D}maxvol(int N, int R, $dtype *lu, $dtype *coef, int *basis,
         raise ValueError("Input matrix must not be singular")
     for i in prange(N, schedule="static", nogil=True):
         interchange[i] = i
-    for i in range(R):
+    for i in prange(R, schedule="static", nogil=True):
         j = ipiv[i]-1
         if j != i:
             tmp_int = interchange[i]
