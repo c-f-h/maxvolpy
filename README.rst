@@ -52,4 +52,4 @@ functions, written in Python.
 Documentation
 =============
 
-Is available at https://maxvolpy.readthedocs.org
+Is available at http://pythonhosted.org/maxvolpy/
