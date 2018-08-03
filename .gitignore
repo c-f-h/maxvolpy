@@ -1,4 +1,4 @@
 *.pyc
-_maxvol.pyx
+maxvolpy/_maxvol.c
 build/*
 docs/build/*

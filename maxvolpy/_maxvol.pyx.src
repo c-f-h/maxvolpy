@@ -7,6 +7,18 @@ cimport numpy as cnp
 from libc.stdlib cimport malloc, realloc, free
 from cython.parallel import prange
 
+from scipy.linalg.cython_blas cimport (
+        strsm, dtrsm, ctrsm, ztrsm,
+        scopy, ccopy, dcopy, zcopy,
+        sgemv, dgemv, cgemv, zgemv,
+        sger, dger, cgerc, cgeru, zgerc, zgeru,
+        isamax, idamax
+)
+
+from scipy.linalg.cython_lapack cimport (
+    sgetrf, dgetrf, cgetrf, zgetrf
+)
+
 cdef extern from "complex.h" nogil:
     double cabs(double complex)
     float cabsf(float complex)
@@ -103,53 +115,6 @@ def c_maxvol(A, tol=1.05, max_iters=100, top_k_index=-1):
         raise
     return basis, coef
 
-cdef extern:
-    void sgetrf_(int *, int *, float *, int *, int *, int *)
-    void strsm_(char *, char *, char *, char *, int *, int *, float *,
-        float *, int *, float *, int *)
-    int isamax_(int *, float *, int *)
-    void scopy_(int *, float *, int *, float *, int *)
-    void sger_(int *, int *, float *, float *, int *, float *, int *,
-        float *, int *)
-    float sdot_(int *, float *, int *, float *, int *)
-    void sgemv_(char *, int *, int *, float *, float *, int *, float *,
-        int *, float *, float *, int *)
-    void dgetrf_(int *, int *, double *, int *, int *, int *)
-    void dtrsm_(char *, char *, char *, char *, int *, int *, double *,
-        double *, int *, double *, int *)
-    int idamax_(int *, double *, int *)
-    void dcopy_(int *, double *, int *, double *, int *)
-    void dger_(int *, int *, double *, double *, int *, double *, int *,
-        double *, int *)
-    double ddot_(int *, double *, int *, double *, int *)
-    void dgemv_(char *, int *, int *, double *, double *, int *, double *,
-        int *, double *, double *, int *)
-    void cgetrf_(int *, int *, float complex *, int *, int *, int *)
-    void ctrsm_(char *, char *, char *, char *, int *, int *, float complex *,
-        float complex *, int *, float complex *, int *)
-    void ccopy_(int *, float complex *, int *, float complex *, int *)
-    void cgerc_(int *, int *, float complex *, float complex *, int *,
-        float complex *, int *, float complex *, int *)
-    void cgeru_(int *, int *, float complex *, float complex *, int *,
-        float complex *, int *, float complex *, int *)
-    float complex cdot_(int *, float complex *, int *, float complex *, int *)
-    void cgemv_(char *, int *, int *, float complex *, float complex *, int *,
-        float complex *, int *, float complex *, float complex *, int *)
-    void zgetrf_(int *, int *, double complex *, int *, int *, int *)
-    void ztrsm_(char *, char *, char *, char *, int *, int *, double complex *,
-        double complex *, int *, double complex *, int *)
-    void zcopy_(int *, double complex *, int *, double complex *, int *)
-    void zgerc_(int *, int *, double complex *, double complex *, int *,
-        double complex *, int *, double complex *, int *)
-    void zgeru_(int *, int *, double complex *, double complex *, int *,
-        double complex *, int *, double complex *, int *)
-    double complex zdot_(int *, double complex *, int *, double complex *,
-        int *)
-    void zgemv_(char *, int *, int *, double complex *, double complex *,
-        int *, double complex *, int *, double complex *, double complex *,
-        int *)
-
-
 """
 
 maxvol_template = """
@@ -174,7 +139,7 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK,
         top_k_index = N
     if top_k_index < R:
         top_k_index = R
-    ${D}copy_(&size, lu, &i_one, coef, &i_one)
+    ${D}copy(&size, lu, &i_one, coef, &i_one)
     tmp = 1.05 # tolerance for square maxvol
     ${D}maxvol(N, R, lu, coef, basis, tmp, start_maxvol_iters, top_k_index)
     # compute square length for each vector
@@ -190,19 +155,19 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK,
     for i in prange(R, schedule="static", nogil=True):
         L[basis[i]] = 0.0
         chosen[basis[i]] = 0.0
-    i = i${D2}amax_(&top_k_index, L, &i_one)-1
+    i = i${D2}amax(&top_k_index, L, &i_one)-1
     K = R
     while K < minK or (L[i] > tol2 and K < maxK):
         basis[K] = i
         chosen[i] = 0.0
-        #${D}copy_(&K, coef+i, &N, tmp_row, &i_one)
+        #${D}copy(&K, coef+i, &N, tmp_row, &i_one)
         tmp_pointer = coef+i
         for j in prange(K, schedule="static", nogil=True):
             tmp_row[j] = tmp_pointer[j*N]$conj
-        ${D}gemv_(&cN, &N, &K, &d_one, coef, &N, tmp_row, &i_one, &d_zero, V,
+        ${D}gemv(&cN, &N, &K, &d_one, coef, &N, tmp_row, &i_one, &d_zero, V,
             &i_one)
         l = (-d_one)/(1+V[i])
-        $gerc_(&N, &K, &l, V, &i_one, tmp_row, &i_one, coef, &N)
+        $gerc(&N, &K, &l, V, &i_one, tmp_row, &i_one, coef, &N)
         tmp = -l$dotreal
         if coef_columns <= K:
             coef_columns += coef_realloc_step
@@ -214,7 +179,7 @@ cdef object ${D}rect_maxvol(int N, int R, $dtype *lu, $dtype2 tol, int minK,
             tmp2 = ${abs}(V[j])
             L[j] -= tmp2*tmp2*tmp
             L[j] *= chosen[j]
-        i = i${D2}amax_(&top_k_index, L, &i_one)-1
+        i = i${D2}amax(&top_k_index, L, &i_one)-1
         K += 1
     free(L)
     free(V)
@@ -256,7 +221,7 @@ cdef object ${D}maxvol(int N, int R, $dtype *lu, $dtype *coef, int *basis,
         top_k_index = N
     if top_k_index < R:
         top_k_index = R
-    ${D}getrf_(&top_k_index, &R, lu, &N, ipiv, &info)
+    ${D}getrf(&top_k_index, &R, lu, &N, ipiv, &info)
     if info < 0:
         raise ValueError("Internal maxvol_fullrank error, {} argument of"
             " ${D}getrf_ had illegal value".format(info))
@@ -274,8 +239,8 @@ cdef object ${D}maxvol(int N, int R, $dtype *lu, $dtype *coef, int *basis,
     for i in prange(R, schedule="static", nogil=True):
         basis[i] = interchange[i]
     free(interchange)
-    ${D}trsm_(&cR, &cU, &cN, &cN, &N, &R, &d_one, lu, &N, coef, &N)
-    ${D}trsm_(&cR, &cL, &cN, &cU, &N, &R, &d_one, lu, &N, coef, &N)
+    ${D}trsm(&cR, &cU, &cN, &cN, &N, &R, &d_one, lu, &N, coef, &N)
+    ${D}trsm(&cR, &cL, &cN, &cU, &N, &R, &d_one, lu, &N, coef, &N)
     while iters < max_iters:
         abs_max = -1
         for k_row in range(top_k_index):
@@ -287,12 +252,12 @@ cdef object ${D}maxvol(int N, int R, $dtype *lu, $dtype *coef, int *basis,
                     i = k_col
         max_value = coef[j+i*N]
         if abs_max > tol:
-            ${D}copy_(&R, coef+j, &N, tmp_row, &i_one)
+            ${D}copy(&R, coef+j, &N, tmp_row, &i_one)
             tmp_row[i] -= d_one
-            ${D}copy_(&N, coef+i*N, &i_one, tmp_column, &i_one)
+            ${D}copy(&N, coef+i*N, &i_one, tmp_column, &i_one)
             basis[i] = j
             alpha = (-d_one)/max_value
-            $geru_(&N, &R, &alpha, tmp_column, &i_one, tmp_row, &i_one,
+            $geru(&N, &R, &alpha, tmp_column, &i_one, tmp_row, &i_one,
                 coef, &N)
             iters += i_one
         else:
@@ -307,17 +272,17 @@ from string import Template
 
 code_maxvol = Template(maxvol_template)
 
-code_float = code_maxvol.substitute(D='s', D2='s', gerc_='sger_',
-    geru_='sger_', dtype='float', dtype2='float', npdtype='np.float32',
+code_float = code_maxvol.substitute(D='s', D2='s', gerc='sger',
+    geru='sger', dtype='float', dtype2='float', npdtype='np.float32',
     dotreal='', conj='', abs='fabsf')
-code_double = code_maxvol.substitute(D='d', D2='d', gerc_='dger_',
-    geru_='dger_', dtype='double', dtype2='double', npdtype='np.float64',
+code_double = code_maxvol.substitute(D='d', D2='d', gerc='dger',
+    geru='dger', dtype='double', dtype2='double', npdtype='np.float64',
     dotreal='', conj='', abs='fabs')
-code_floatcomplex = code_maxvol.substitute(D='c', D2='s', gerc_='cgerc_',
-    geru_='cgeru_', dtype='float complex', dtype2='float',
+code_floatcomplex = code_maxvol.substitute(D='c', D2='s', gerc='cgerc',
+    geru='cgeru', dtype='float complex', dtype2='float',
     npdtype='np.complex64', dotreal='.real', conj='.conjugate()', abs='cabsf')
-code_doublecomplex = code_maxvol.substitute(D='z', D2='d', gerc_='zgerc_',
-    geru_='zgeru_',  dtype='double complex', dtype2='double',
+code_doublecomplex = code_maxvol.substitute(D='z', D2='d', gerc='zgerc',
+    geru='zgeru',  dtype='double complex', dtype2='double',
     npdtype='np.complex128', dotreal='.real', conj='.conjugate()', abs='cabs')
 
 f = open('_maxvol.pyx', 'w')
